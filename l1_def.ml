@@ -1,7 +1,6 @@
 type term =
-        TmIntegerVal
-    |   TmFalse
-    |   TmTrue
+    |   TmInteger
+    |   TmBool
     |   TmPlus of term * term
     |   TmMinus of term * term
     |   TmMult of term * term
