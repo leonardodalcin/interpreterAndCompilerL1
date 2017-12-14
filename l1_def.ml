@@ -1,26 +1,26 @@
 type variable = string
 
-(* Outros operadores binário e unários podem ser adicionados a linguagem *) 
-type operator = Sum | Diff | Mult | Div | Ge | Geq | Eq | Neq | Leq | Le  
+(* Outros operadores binário e unários podem ser adicionados a linguagem *)
+type operator = Sum | Diff | Mult | Div | Ge | Geq | Eq | Neq | Leq | Le
 
 type tipo  = TyInt | TyBool | TyFn of tipo * tipo
 
-type expr = 
+type expr =
           | Num of int
           | Bool of bool
           | Bop of operator * expr * expr
           | If of expr * expr * expr
-          | Var of variable 
-          | App of expr * expr 
-          | Lam of variable * tipo * expr 
-          | Let of variable * tipo * expr * expr 
-          | Lrec of variable * tipo * tipo * variable * tipo * expr * expr 
+          | Var of variable
+          | App of expr * expr
+          | Lam of variable * tipo * expr
+          | Let of variable * tipo * expr * expr
+          | Lrec of variable * tipo * tipo * variable * tipo * expr * expr
 
-type value = Vnum of int 
-           | Vbool of bool 
+type value = Vnum of int
+           | Vbool of bool
            | Vclos of variable * expr * env
            | Vrclos of variable * variable * expr * env
-and 
+and
      env = (variable * value) list
 
 exception NotInEnvironment of variable * string
