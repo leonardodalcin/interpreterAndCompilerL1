@@ -1,38 +1,37 @@
-exception Error of string;;
+type variable = string
 
-type term =
-    |   TmInteger of int
-    |   TmBool
-    |   TmTrue
-    |   TmFalse
-    |   TmPlus of term * term
-    |   TmMinus of term * term
-    |   TmMult of term * term
-    |   TmDiv of term * term
-    |   TmLesser of term * term
-    |   TmLesserOrEqual of term * term
-    |   TmEqual of term * term
-    |   TmNotEqual of term * term
-    |   TmGreater of term * term
-    |   TmGreaterOrEqual of term * term
-    |   TmIf of term * term * term
-    |   TmX of term
-    |   TmApp of term * term
-    |   TmFn of term
-    |   TmLetX of term
-    |   TmLetRec of term
-    |   TmIdent of string
+(* Outros operadores binário e unários podem ser adicionados a linguagem *) 
+type operator = Sum | Diff | Mult | Div | Ge | Geq | Eq | Neq | Leq | Le  
 
+type tipo  = TyInt | TyBool | TyFn of tipo * tipo
 
-let to_str t =
-    match t with
-            TmTrue -> "TmTrue"
-        |   TmFalse -> "TmFalse"
-        |   TmInteger(v) -> string_of_int v
-        |   _-> raise(Error "ERROR!");;
+type expr = 
+          | Num of int
+          | Bool of bool
+          | Bop of operator * expr * expr
+          | If of expr * expr * expr
+          | Var of variable 
+          | App of expr * expr 
+          | Lam of variable * tipo * expr 
+          | Let of variable * tipo * expr * expr 
+          | Lrec of variable * tipo * tipo * variable * tipo * expr * expr 
 
+type value = Vnum of int 
+           | Vbool of bool 
+           | Vclos of variable * expr * env
+           | Vrclos of variable * variable * expr * env
+and 
+     env = (variable * value) list
 
-let print_tm t =
-    let t_str = to_str t in
-    (Printf.printf "%s\n" t_str)
+(* Segue um exemplo de como o programa L1 abaixo pode ser representado internamente *)
 
+(* let rec fat: int -> int = (fn x: int => if (x == 0) then 1 else x * (fat (x - 1)))
+   in fat (5)
+   end
+*)
+
+(* Lrec("fat", TyInt, TyInt, "x", TyInt,
+If(Bop(Eq, Var("x"), Num(0)),
+   Num(1),
+   Bop(Mult, Var("x"), App(Var("fat"), Bop(Diff, Var("x"), Num(1))))),
+App(Var("fat"), Num(5))) *)
