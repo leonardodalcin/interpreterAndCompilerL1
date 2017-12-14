@@ -5,12 +5,13 @@ exception WrongType of string * string * tipo
 exception NoMatch of string * string * tipo * tipo
 exception UnexpectedError of string 
 
-let environment : (variable * value) list = [("x", Vnum(2)); ("fat", Vclos("x", Bop(Sum, 1,2)),environment)];;
+let environment : (variable * value) list = [("x", Vnum(2)); ("y", Vbool(true))];;
 
 let rec type_infer (t) : tipo = 
     match t with
         | Num(n) -> TyInt
         | Bool(b) -> TyBool
+
         | Var(x) -> 
             let varValue = find_var_value x environment in
             (match varValue with
@@ -157,5 +158,73 @@ let rec type_infer (t) : tipo =
                 | _ -> raise NoRuleApplies)
         | _ -> raise NoRuleApplies
 
-let tif = (If(Bop(Eq, Var("x"), Num(0)),Num(1)), Bop(Mult, Var("x"), App(Var("fat"), Bop(Diff, Var("x"), Num(1)))),App(Var("fat"), Num(5)));;
+let testSum = Bop(Sum, Num(1), Num(2));;  
+type_infer testSum;;
+
+let testDiff = Bop(Diff, Num(1), Num(2));;  
+type_infer testDiff;;
+
+let testMult = Bop(Mult, Num(1), Num(2));;  
+type_infer testMult;;
+
+let testDiv = Bop(Div, Num(1), Num(2));;  
+type_infer testDiv;;
+
+let testGe = Bop(Ge, Num(1), Num(2));;  
+type_infer testGe;;
+
+let testGeq = Bop(Geq, Num(1), Num(2));;  
+type_infer testGeq;;
+
+let testEq = Bop(Eq, Num(1), Num(2));;  
+type_infer testEq;;
+
+let testNeq = Bop(Neq, Num(1), Num(2));;  
+type_infer testNeq;;
+
+let testLeq = Bop(Leq, Num(1), Num(2));;  
+type_infer testLeq;;
+
+let testLe = Bop(Le, Num(1), Num(2));; 
+type_infer testLe;;
+
+let testVnum = Var("x");;
+type_infer testVnum;;
+
+let testVbool = Var("y");;  
+type_infer testVbool;;
+
+(* let testVclos = Vclos(Num(1), Num(2));;  
+type_infer testVclos;;
+
+let testVrclos = Vrclos(Num(1), Num(2));; 
+type_infer testVrclos;;
+*)
+let testNum = Num(1);;
+type_infer testNum;;
+
+let testBool = Bool(true);;
+type_infer testBool;;
+
+
+let testIf = If(testVbool, Num(2), Num(3));;
+type_infer testIf;;
+
+let testVar = Var("x");;
+type_infer testVar;;
+
+let testFun = TyFn(TyBool,TyBool);;  
+type_infer testFun;;
+
+let testApp = App(Num(1), Num(2));;
+type_infer testApp;;
+
+
+let testLet = Let("x", TyInt, testLe, testLe);;
+type_infer testLet;;
+
+(* let testLrec = Lrec(Num(1), Num(2));;
+type_infer testLrec;;
+ *)
+
 
