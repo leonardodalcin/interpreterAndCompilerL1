@@ -5,15 +5,42 @@ exception WrongType of string * string * tipo
 exception NoMatch of string * string * tipo * tipo
 exception UnexpectedError of string 
 
+let environment : (variable * value) list = [("x", Vnum(2)); ("fat", Vclos("x", Bop(Sum, 1,2)),environment)];;
+
 let rec type_infer (t) : tipo = 
     match t with
         | Num(n) -> TyInt
         | Bool(b) -> TyBool
-        | Var(x) -> variable;
+        | Var(x) -> 
+            let varValue = find_var_value x environment in
+            (match varValue with
+               | Vnum(n) -> TyInt 
+               | Vbool(b) -> TyBool
+               | Vclos(x,e,environment) -> 
+                    let ruleText = "Tipo de E deveria ser igual à: " in
+                    let varType = type_infer(Var(x)) in
+                    let eType = type_infer(e) in
+                    if(eType == varType) then
+                        eType
+                    else
+                        raise (NoMatch("Vclos", ruleText, varType, eType))
+
+               | Vrclos(x1,x2, e, environment) -> 
+                    let ruleText = "Tipo de E deveria ser igual à: " in
+                    let x1Type = type_infer(Var(x1)) in
+                    let x2Type = type_infer(Var(x2)) in
+                    let eType = type_infer(e) in
+                    if (eType == x1Type) && (eType==x2Type) then
+                        eType
+                    else
+                        raise (NoMatch("Vrclos", ruleText, x1Type, eType))
+               | _ -> raise NoRuleApplies)
+
         | Let(x,t,e1,e2) -> 
-            let tType = type_infer(t) in
-            let e1Type = type_infer(e) in
-            let e2Type = type_infer(e) in
+            let xType = type_infer(Var(x)) in
+            let tType = t in
+            let e1Type = type_infer(e1) in
+            let e2Type = type_infer(e2) in
 
             let ruleText = "Tipo de E deveria ser igual à: " in
 
@@ -21,7 +48,9 @@ let rec type_infer (t) : tipo =
                 e2Type
             else
                 raise (NoMatch("Let", ruleText, tType, e1Type))
-
+     (*    | Lrec(x1, t1, t2, x2, t, e1, e2) ->
+            let x1Type = type_infer(Var(x1)) in
+            let x2Type = type_infer(Var(x2)) in *)
         | App(e1,e2) -> 
             let e1Type = type_infer(e1) in
             let e2Type = type_infer(e2) in
@@ -75,7 +104,7 @@ let rec type_infer (t) : tipo =
         | Bop(o,e1,e2) -> 
             let e1Type = type_infer(e1) in
             let e2Type = type_infer(e2) in
-            match o with
+            (match o with
                 | Sum ->  
                     let rule1Text = "Tipo de E1 deve ser TyInt, recebido: " in
                     let rule2Text = "Tipo de E2 deve ser TyInt, recebido: " in
@@ -121,11 +150,12 @@ let rec type_infer (t) : tipo =
                     let rule1 = e1Type == e2Type in
                     
                     if rule1 then
-                        e1Type      
+                        TyBool      
                     else
                         raise (NoMatch("Eq", rule1Text, e1Type, e2Type))
                 | Neq -> type_infer(Bop(Eq, e1, e2))
-                | _ -> raise NoRuleApplies
+                | _ -> raise NoRuleApplies)
         | _ -> raise NoRuleApplies
 
-let tif = (Bop(Neq, Bool(true), Num(2)));;
+let tif = (If(Bop(Eq, Var("x"), Num(0)),Num(1)), Bop(Mult, Var("x"), App(Var("fat"), Bop(Diff, Var("x"), Num(1)))),App(Var("fat"), Num(5)));;
+

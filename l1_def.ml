@@ -23,6 +23,14 @@ type value = Vnum of int
 and 
      env = (variable * value) list
 
+exception NotInEnvironment of variable * string
+
+let rec find_var_value x environment : value =
+    match environment with
+        | [] -> raise (NotInEnvironment(x, "not found in environment"))
+        | hd::tl -> if fst hd = x then snd hd
+                              else find_var_value x tl
+
 (* Segue um exemplo de como o programa L1 abaixo pode ser representado internamente *)
 
 (* let rec fat: int -> int = (fn x: int => if (x == 0) then 1 else x * (fat (x - 1)))
