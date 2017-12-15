@@ -1,6 +1,5 @@
 type variable = string
 
-(* Outros operadores binário e unários podem ser adicionados a linguagem *)
 type operator = Sum | Diff | Mult | Div | Ge | Geq | Eq | Neq | Leq | Le
 
 type tipo  = TyInt | TyBool | TyFn of tipo * tipo
@@ -23,23 +22,75 @@ type value = Vnum of int
 and
      env = (variable * value) list
 
-exception NotInEnvironment of variable * string
 
-let rec find_var_value x environment : value =
-    match environment with
-        | [] -> raise (NotInEnvironment(x, "not found in environment"))
-        | hd::tl -> if fst hd = x then snd hd
-                              else find_var_value x tl
+(* Except. *)
 
-(* Segue um exemplo de como o programa L1 abaixo pode ser representado internamente *)
 
-(* let rec fat: int -> int = (fn x: int => if (x == 0) then 1 else x * (fat (x - 1)))
-   in fat (5)
-   end
-*)
+exception L1Exception of string;;
 
-(* Lrec("fat", TyInt, TyInt, "x", TyInt,
-If(Bop(Eq, Var("x"), Num(0)),
-   Num(1),
-   Bop(Mult, Var("x"), App(Var("fat"), Bop(Diff, Var("x"), Num(1))))),
-App(Var("fat"), Num(5))) *)
+
+(* Value *)
+
+
+let int_value value =
+    match value with
+    | Vnum(n) -> n
+    | _ -> raise(L1Exception "Not a Vnum!");;
+
+
+(* Env. *)
+
+
+let extract_id t =
+    match t with
+    | (id, value) -> id;;
+
+
+let extract_value t =
+    match t with
+    | (id, value) -> value;;
+
+
+let rec update_env env id value =
+    match env with
+    | [] -> (id, value)::[]
+    | hd :: tl ->
+      let new_tl = update_env tl id value in
+      if extract_id hd = id then new_tl else hd :: new_tl;;
+
+
+let rec var_value env id =
+    match env with
+    | [] -> raise(L1Exception "Undeclared variable!")
+    | hd :: tl ->
+      if extract_id hd = id then extract_value hd else var_value tl id ;;
+
+
+(* Print *)
+
+
+let rec value_to_str value =
+    match value with
+        | Vbool(true) -> "TRUE"
+        | Vbool(false) -> "FALSE"
+        | Vnum(v) -> string_of_int v
+        | Vrclos(f, x, expr, env) -> value_to_str (var_value env x)
+        | _-> raise(L1Exception "value_to_str: Can't convert value to string!");;
+
+
+let expr_to_str expr =
+    match expr with
+        | Bool(true) -> "TRUE"
+        | Bool(false) -> "FALSE"
+        | Num(v) -> string_of_int v
+        | _-> raise(L1Exception "expr_to_str: Can't convert expression to string!");;
+
+
+let print_value value =
+    let val_str = value_to_str value in
+    (Printf.printf "%s\n" val_str);;
+
+
+let print_expr expr =
+    let expr_str = expr_to_str expr in
+    (Printf.printf "%s\n" expr_str);;

@@ -1,80 +1,11 @@
 #use "l1_def.ml"
-
-
-exception L1Exception of string;;
-
-
-(* Value *)
-
-
-let int_value value =
-    match value with
-    | Vnum(n) -> n
-    | _ -> raise(L1Exception "Not a Vnum!");;
-
-
-(* Env. *)
-
-
-let extract_id t =
-    match t with
-    | (id, value) -> id;;
-
-
-let extract_value t =
-    match t with
-    | (id, value) -> value;;
-
-
-let rec update_env env id value =
-    match env with
-    | [] -> (id, value)::[]
-    | hd :: tl ->
-      let new_tl = update_env tl id value in
-      if extract_id hd = id then new_tl else hd :: new_tl;;
-
-
-let rec var_value env id =
-    match env with
-    | [] -> raise(L1Exception "Undeclared variable!")
-    | hd :: tl ->
-      if extract_id hd = id then extract_value hd else var_value tl id ;;
-
-
-(* Print *)
-
-
-let rec value_to_str value =
-    match value with
-        | Vbool(true) -> "TRUE"
-        | Vbool(false) -> "FALSE"
-        | Vnum(v) -> string_of_int v
-        | Vrclos(f, x, expr, env) -> value_to_str (var_value env x)
-        | _-> raise(L1Exception "value_to_str: Can't convert value to string!");;
-
-
-let expr_to_str expr =
-    match expr with
-        | Bool(true) -> "TRUE"
-        | Bool(false) -> "FALSE"
-        | Num(v) -> string_of_int v
-        | _-> raise(L1Exception "expr_to_str: Can't convert expression to string!");;
-
-
-let print_value value =
-    let val_str = value_to_str value in
-    (Printf.printf "%s\n" val_str);;
-
-
-let print_expr expr =
-    let expr_str = expr_to_str expr in
-    (Printf.printf "%s\n" expr_str);;
-
+#use "type_infer.ml"
 
 (* Big step *)
 
 
 let rec big_step exp env =
+    type_infer exp env;
     match exp with
     | Num(int_value) -> Vnum(int_value)
     | Bool(bool_value) -> Vbool(bool_value)
@@ -127,4 +58,4 @@ let rec big_step exp env =
 
 let rec eval exp =
     let env = [] in
-    big_step exp env
+    big_step exp env;
